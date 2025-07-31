@@ -55,11 +55,20 @@ class LightweightExtractor:
                 'Delivery_Status', 'Category'
             ]
             
-            # Convert dates
+            # Convert dates - handle Excel serial numbers
             date_cols = ['Requested_Ship_Date', 'Requested_Delivery_Date', 'Actual_Ship_Date']
             for col in date_cols:
                 if col in df_main.columns:
+                    # First try normal datetime conversion
                     df_main[col] = pd.to_datetime(df_main[col], errors='coerce')
+                    
+                    # If that fails, try Excel serial number conversion
+                    if df_main[col].isna().all():
+                        try:
+                            # Excel dates start from 1899-12-30
+                            df_main[col] = pd.to_datetime('1899-12-30') + pd.to_timedelta(df_main[col], unit='D')
+                        except:
+                            pass
             
             # Add basic columns
             df_main['Transaction_ID'] = range(1, len(df_main) + 1)

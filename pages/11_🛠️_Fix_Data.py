@@ -132,4 +132,21 @@ if st.button("2. Download and Extract Data", type="primary"):
         st.code(traceback.format_exc())
 
 st.markdown("---")
+
+# Fix dates button
+if st.button("3. Fix Date Issues", type="secondary"):
+    try:
+        from fix_dates import fix_shipping_dates
+        
+        with st.spinner("Fixing date columns..."):
+            if fix_shipping_dates():
+                st.success("✅ Fixed date columns!")
+                st.info("Dates have been set to July 2025 to match the data")
+                st.balloons()
+            else:
+                st.error("Failed to fix dates")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+st.markdown("---")
 st.info("After fixing, go back to the Overview page and the app should work properly.")
