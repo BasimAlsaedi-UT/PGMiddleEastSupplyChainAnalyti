@@ -85,19 +85,39 @@ def load_data():
         try:
             # Check if we need to extract data first
             extracted_file = os.path.join(os.path.dirname(__file__), 'data', 'extracted', 'shipping_main_data.csv')
-            if not os.path.exists(extracted_file):
+            
+            # For cloud deployment, always reload data from cloud
+            if CLOUD_DEPLOYMENT and hasattr(st, 'secrets'):
+                st.info("Loading data from cloud storage...")
+                shipping_data, sales_data = load_cloud_data()
+                
+                if shipping_data is not None and sales_data is not None:
+                    # Get parent directory for saving Excel files
+                    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                    
+                    # Save cloud data as local Excel files
+                    if save_cloud_data_locally(shipping_data, sales_data, parent_dir):
+                        st.success("Successfully loaded data from Dropbox")
+                        
+                        # Now extract the data
+                        file1_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
+                        file2_path = os.path.join(parent_dir, "3-DSR-PG- 2025 July.xlsx")
+                        
+                        extractor = DataExtractor(file1_path=file1_path, file2_path=file2_path)
+                        extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
+                    else:
+                        st.error("Failed to save cloud data locally")
+                        st.stop()
+                else:
+                    st.error("Failed to load data from cloud storage. Check your Streamlit secrets configuration.")
+                    st.stop()
+            
+            # For local deployment, check if extraction is needed
+            elif not os.path.exists(extracted_file):
                 st.info("First time setup: Extracting data from Excel files...")
                 
                 # Get parent directory
                 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                
-                # Try cloud deployment first
-                if CLOUD_DEPLOYMENT and hasattr(st, 'secrets'):
-                    shipping_data, sales_data = load_cloud_data()
-                    if shipping_data is not None and sales_data is not None:
-                        # Save cloud data as local Excel files
-                        if save_cloud_data_locally(shipping_data, sales_data, parent_dir):
-                            st.success("Loaded data from cloud storage")
                 
                 # Extract data from Excel files
                 file1_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
@@ -105,12 +125,8 @@ def load_data():
                 
                 # Check if files exist
                 if not os.path.exists(file1_path) or not os.path.exists(file2_path):
-                    if CLOUD_DEPLOYMENT:
-                        st.error("Data files not found. Please configure data in Streamlit secrets.")
-                        st.stop()
-                    else:
-                        st.error("Excel files not found in parent directory.")
-                        st.stop()
+                    st.error("Excel files not found in parent directory.")
+                    st.stop()
                 
                 extractor = DataExtractor(file1_path=file1_path, file2_path=file2_path)
                 extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
@@ -126,7 +142,8 @@ def load_data():
             return True
         except Exception as e:
             st.error(f"Error loading data: {str(e)}")
-            st.error("Please ensure the Excel files are in the parent directory.")
+            import traceback
+            st.error(f"Traceback: {traceback.format_exc()}")
             return False
 
 def main():
@@ -156,6 +173,14 @@ def main():
         # Data refresh
         if st.button("🔄 Refresh Data"):
             st.session_state.data_loaded = False
+            # Clear extracted data to force reload
+            try:
+                import shutil
+                extracted_dir = os.path.join(os.path.dirname(__file__), 'data', 'extracted')
+                if os.path.exists(extracted_dir):
+                    shutil.rmtree(extracted_dir)
+            except:
+                pass
             st.rerun()
         
         if st.session_state.last_update:

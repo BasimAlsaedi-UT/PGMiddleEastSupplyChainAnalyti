@@ -118,17 +118,35 @@ def save_cloud_data_locally(shipping_data: pd.DataFrame, sales_data: pd.DataFram
                            parent_dir: str) -> bool:
     """Save cloud data to local files for processing"""
     try:
+        # Ensure parent directory exists
+        os.makedirs(parent_dir, exist_ok=True)
+        
         # Save with expected file names
         shipping_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
         sales_path = os.path.join(parent_dir, "3-DSR-PG- 2025 July.xlsx")
         
-        # Save to Excel files
-        shipping_data.to_excel(shipping_path, index=False)
-        sales_data.to_excel(sales_path, index=False)
+        st.info(f"Saving shipping data to: {shipping_path}")
+        st.info(f"Saving sales data to: {sales_path}")
         
+        # Save to Excel files using xlsxwriter if available
+        try:
+            with pd.ExcelWriter(shipping_path, engine='xlsxwriter') as writer:
+                shipping_data.to_excel(writer, index=False)
+        except ImportError:
+            shipping_data.to_excel(shipping_path, index=False, engine='openpyxl')
+            
+        try:
+            with pd.ExcelWriter(sales_path, engine='xlsxwriter') as writer:
+                sales_data.to_excel(writer, index=False)
+        except ImportError:
+            sales_data.to_excel(sales_path, index=False, engine='openpyxl')
+        
+        st.success(f"Saved {len(shipping_data)} shipping records and {len(sales_data)} sales records")
         return True
     except Exception as e:
         st.error(f"Error saving cloud data: {str(e)}")
+        import traceback
+        st.error(f"Traceback: {traceback.format_exc()}")
         return False
 
 def load_cloud_data() -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
