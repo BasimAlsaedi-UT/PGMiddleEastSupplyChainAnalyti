@@ -107,8 +107,8 @@ if load_cloud_data:
 
 ```toml
 [google_drive]
-shipping_file_id = "YOUR_FILE_ID"
-sales_file_id = "YOUR_FILE_ID"
+shipping_file_id = "https://docs.google.com/spreadsheets/d/1ZqnJ0db0p1RwOjMikCQL9R4c1mZ2G59-/edit?usp=sharing&ouid=108224533927157750418&rtpof=true&sd=true"
+sales_file_id = "https://docs.google.com/spreadsheets/d/1b61GNkB3VW37hVJFG7pt0lPetbvP3xKi/edit?usp=sharing&ouid=108224533927157750418&rtpof=true&sd=true"
 ```
 
 ## Environment Variables
