@@ -164,6 +164,12 @@ def load_data():
             st.error(f"Error loading data: {str(e)}")
             import traceback
             st.error(f"Traceback: {traceback.format_exc()}")
+            
+            # Prevent infinite recursion by checking if we've already failed
+            if 'load_failed' not in st.session_state:
+                st.session_state.load_failed = True
+                st.error("Data loading failed. Please go to '🛠️ Fix Data' page to manually fix.")
+            
             return False
 
 def main():
