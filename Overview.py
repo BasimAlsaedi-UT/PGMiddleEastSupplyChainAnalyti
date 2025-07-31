@@ -20,6 +20,7 @@ from utils.data_processor import DataProcessor
 # Try to import cloud data loader for Streamlit deployment
 try:
     from cloud_data_loader import load_cloud_data, save_cloud_data_locally
+    from cloud_data_loader_v2 import load_cloud_data_v2
     CLOUD_DEPLOYMENT = True
 except ImportError:
     CLOUD_DEPLOYMENT = False
@@ -89,25 +90,18 @@ def load_data():
             # For cloud deployment, always reload data from cloud
             if CLOUD_DEPLOYMENT and hasattr(st, 'secrets'):
                 st.info("Loading data from cloud storage...")
-                shipping_data, sales_data = load_cloud_data()
                 
-                if shipping_data is not None and sales_data is not None:
-                    # Get parent directory for saving Excel files
-                    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                # Use the enhanced loader that preserves Excel structure
+                if load_cloud_data_v2():
+                    st.success("Successfully loaded and saved Excel files from Dropbox")
                     
-                    # Save cloud data as local Excel files
-                    if save_cloud_data_locally(shipping_data, sales_data, parent_dir):
-                        st.success("Successfully loaded data from Dropbox")
-                        
-                        # Now extract the data
-                        file1_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
-                        file2_path = os.path.join(parent_dir, "3-DSR-PG- 2025 July.xlsx")
-                        
-                        extractor = DataExtractor(file1_path=file1_path, file2_path=file2_path)
-                        extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
-                    else:
-                        st.error("Failed to save cloud data locally")
-                        st.stop()
+                    # Now extract the data
+                    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                    file1_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
+                    file2_path = os.path.join(parent_dir, "3-DSR-PG- 2025 July.xlsx")
+                    
+                    extractor = DataExtractor(file1_path=file1_path, file2_path=file2_path)
+                    extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
                 else:
                     st.error("Failed to load data from cloud storage. Check your Streamlit secrets configuration.")
                     st.stop()

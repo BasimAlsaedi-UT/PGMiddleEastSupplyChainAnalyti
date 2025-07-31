@@ -11,7 +11,7 @@ import os
 import requests
 from typing import Tuple, Optional
 
-def load_from_url(url: str) -> pd.DataFrame:
+def load_from_url(url: str, load_all_sheets: bool = False) -> pd.DataFrame:
     """Load Excel file from URL"""
     try:
         # Add headers to avoid bot detection
@@ -27,8 +27,12 @@ def load_from_url(url: str) -> pd.DataFrame:
             st.error("Received HTML instead of Excel file. The file might not be publicly accessible.")
             st.error("Please ensure the Google Sheets is shared with 'Anyone with the link can view'")
             return None
-            
-        return pd.read_excel(BytesIO(response.content))
+        
+        # Load all sheets if requested
+        if load_all_sheets:
+            return pd.read_excel(BytesIO(response.content), sheet_name=None)
+        else:
+            return pd.read_excel(BytesIO(response.content))
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 403:
             st.error("403 Forbidden: The file is not publicly accessible. Please check sharing settings.")
