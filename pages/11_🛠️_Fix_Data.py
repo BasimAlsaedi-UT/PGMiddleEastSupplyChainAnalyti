@@ -78,19 +78,19 @@ if st.button("2. Download and Extract Data", type="primary"):
         st.success("✅ Saved temporary files")
         
         # Extract data
-        st.info("Extracting data...")
+        st.info("Extracting data (using lightweight extractor)...")
         
-        # Import and use data extractor
-        from utils.data_extractor import DataExtractor
+        # Import and use lightweight extractor
+        from utils.lightweight_extractor import LightweightExtractor
         
-        extractor = DataExtractor(file1_path=shipping_path, file2_path=sales_path)
+        extractor = LightweightExtractor(shipping_file=shipping_path, sales_file=sales_path)
         
         # Create output directory
         output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'extracted')
         os.makedirs(output_dir, exist_ok=True)
         
         # Extract and save
-        file1_data, file2_data = extractor.save_extracted_data(output_dir=output_dir)
+        success = extractor.extract_and_save(output_dir=output_dir)
         
         st.success("✅ Data extracted successfully!")
         

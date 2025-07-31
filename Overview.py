@@ -119,9 +119,11 @@ def load_data():
                     
                     st.success("Downloaded files from Dropbox")
                     
-                    # Extract data
-                    extractor = DataExtractor(file1_path=shipping_path, file2_path=sales_path)
-                    extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
+                    # Extract data using lightweight extractor for cloud
+                    from utils.lightweight_extractor import LightweightExtractor
+                    extractor = LightweightExtractor(shipping_file=shipping_path, sales_file=sales_path)
+                    output_dir = os.path.join(os.path.dirname(__file__), 'data', 'extracted')
+                    extractor.extract_and_save(output_dir=output_dir)
                     
                     st.success("Data extraction completed")
                     
