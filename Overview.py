@@ -87,23 +87,47 @@ def load_data():
             # Check if we need to extract data first
             extracted_file = os.path.join(os.path.dirname(__file__), 'data', 'extracted', 'shipping_main_data.csv')
             
-            # For cloud deployment, always reload data from cloud
-            if CLOUD_DEPLOYMENT and hasattr(st, 'secrets'):
-                st.info("Loading data from cloud storage...")
+            # For cloud deployment, check if we need to extract data
+            if CLOUD_DEPLOYMENT and hasattr(st, 'secrets') and not os.path.exists(extracted_file):
+                st.info("First time setup: Loading data from cloud storage...")
                 
-                # Use the enhanced loader that preserves Excel structure
-                if load_cloud_data_v2():
-                    st.success("Successfully loaded and saved Excel files from Dropbox")
+                try:
+                    # Download files directly
+                    import requests
+                    headers = {'User-Agent': 'Mozilla/5.0'}
                     
-                    # Now extract the data
-                    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                    file1_path = os.path.join(parent_dir, "2-JPG shipping tracking - July 2025.xlsx")
-                    file2_path = os.path.join(parent_dir, "3-DSR-PG- 2025 July.xlsx")
+                    shipping_url = st.secrets.data_files.shipping_url
+                    sales_url = st.secrets.data_files.sales_url
                     
-                    extractor = DataExtractor(file1_path=file1_path, file2_path=file2_path)
+                    # Download to temp directory
+                    temp_dir = "/tmp/excel_files"
+                    os.makedirs(temp_dir, exist_ok=True)
+                    
+                    # Download shipping
+                    resp = requests.get(shipping_url, headers=headers, timeout=60)
+                    resp.raise_for_status()
+                    shipping_path = os.path.join(temp_dir, "shipping.xlsx")
+                    with open(shipping_path, 'wb') as f:
+                        f.write(resp.content)
+                    
+                    # Download sales
+                    resp = requests.get(sales_url, headers=headers, timeout=60)
+                    resp.raise_for_status()
+                    sales_path = os.path.join(temp_dir, "sales.xlsx")
+                    with open(sales_path, 'wb') as f:
+                        f.write(resp.content)
+                    
+                    st.success("Downloaded files from Dropbox")
+                    
+                    # Extract data
+                    extractor = DataExtractor(file1_path=shipping_path, file2_path=sales_path)
                     extractor.save_extracted_data(output_dir=os.path.join(os.path.dirname(__file__), 'data', 'extracted'))
-                else:
-                    st.error("Failed to load data from cloud storage. Check your Streamlit secrets configuration.")
+                    
+                    st.success("Data extraction completed")
+                    
+                except Exception as e:
+                    st.error(f"Error loading from cloud: {str(e)}")
+                    st.error("Please go to 'Fix Data' page in the sidebar to manually fix data loading")
                     st.stop()
             
             # For local deployment, check if extraction is needed
