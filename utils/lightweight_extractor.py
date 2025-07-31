@@ -39,21 +39,29 @@ class LightweightExtractor:
     def _extract_shipping(self, output_dir):
         """Extract shipping data with minimal memory"""
         try:
-            # Read main data (columns B-N, skip first 12 rows)
+            # Read main data (columns C-O to match original extractor, skip first 12 rows)
             df_main = pd.read_excel(
                 self.shipping_file,
                 sheet_name='Sheet1',
                 skiprows=12,
-                usecols='B:N'
+                usecols='C:O'
             )
             
-            # Clean column names
+            # Clean column names based on original data_extractor.py
             df_main.columns = [
-                'Plant', 'Source', 'Source_Type', 'Customer_Name',
-                'Item_Code', 'Description', 'Quantity', 'Requested_Ship_Date',
-                'Requested_Delivery_Date', 'Actual_Ship_Date', 'Warehouse',
-                'Delivery_Status', 'Category'
+                'SLS_Plant', 'Delivery_Status_Raw', 'Category', 'Master_Brand',
+                'Brand', 'L_I', 'Planning_Level', 'Quantity', 'Source',
+                'Actual_Ship_Date', 'Month', 'Requested_Ship_Date', 'Delivery_Status'
             ]
+            
+            # Add additional required columns
+            df_main['Plant'] = df_main['SLS_Plant']
+            df_main['Source_Type'] = 'Default'
+            df_main['Customer_Name'] = 'Default Customer'
+            df_main['Item_Code'] = 'Default'
+            df_main['Description'] = df_main['Brand']
+            df_main['Requested_Delivery_Date'] = df_main['Requested_Ship_Date']
+            df_main['Warehouse'] = df_main['Source']
             
             # Ensure numeric columns are properly typed
             if 'Quantity' in df_main.columns:

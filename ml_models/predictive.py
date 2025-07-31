@@ -91,11 +91,19 @@ class PredictiveModels:
         
         # Evaluate
         y_pred = rf_model.predict(X_test)
-        y_pred_proba = rf_model.predict_proba(X_test)[:, 1]
+        
+        # Handle cases where we might have only one class
+        y_pred_proba = rf_model.predict_proba(X_test)
+        if y_pred_proba.shape[1] == 1:
+            # Only one class present, can't calculate meaningful probabilities
+            y_pred_proba_positive = np.zeros(len(y_test))
+            auc_score = 0.5  # Random performance
+        else:
+            y_pred_proba_positive = y_pred_proba[:, 1]
+            auc_score = roc_auc_score(y_test, y_pred_proba_positive)
         
         # Calculate metrics
         accuracy = rf_model.score(X_test, y_test)
-        auc_score = roc_auc_score(y_test, y_pred_proba)
         
         # Feature importance
         feature_importance = pd.DataFrame({

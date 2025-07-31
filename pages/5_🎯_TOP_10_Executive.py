@@ -143,31 +143,34 @@ with tab1:
         # Top 10 Brands with Best Performance
         st.markdown("### Top 10 Brands - Lowest Late Rate")
         
-        brand_perf = filtered_data.groupby('Master_Brand').agg({
-            'Delivery_Status': [
-                lambda x: (x == 'Late').sum(),
-                'count'
-            ]
-        })
-        brand_perf.columns = ['Late', 'Total']
-        brand_perf['Late_Rate'] = brand_perf['Late'].div(brand_perf['Total'].replace(0, 1)).mul(100).round(1)
-        brand_perf = brand_perf[brand_perf['Total'] >= 20]  # Min 20 shipments
-        
-        best_brands = brand_perf.nsmallest(10, 'Late_Rate')
-        
-        fig = px.bar(
-            best_brands.reset_index(),
-            x='Late_Rate',
-            y='Master_Brand',
-            orientation='h',
-            title="Brands with Lowest Late Rate",
-            color='Late_Rate',
-            color_continuous_scale='Greens_r',
-            text='Late_Rate'
-        )
-        fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-        fig.update_layout(height=400, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        if 'Master_Brand' in filtered_data.columns:
+            brand_perf = filtered_data.groupby('Master_Brand').agg({
+                'Delivery_Status': [
+                    lambda x: (x == 'Late').sum(),
+                    'count'
+                ]
+            })
+            brand_perf.columns = ['Late', 'Total']
+            brand_perf['Late_Rate'] = brand_perf['Late'].div(brand_perf['Total'].replace(0, 1)).mul(100).round(1)
+            brand_perf = brand_perf[brand_perf['Total'] >= 20]  # Min 20 shipments
+            
+            best_brands = brand_perf.nsmallest(10, 'Late_Rate')
+            
+            fig = px.bar(
+                best_brands.reset_index(),
+                x='Late_Rate',
+                y='Master_Brand',
+                orientation='h',
+                title="Brands with Lowest Late Rate",
+                color='Late_Rate',
+                color_continuous_scale='Greens_r',
+                text='Late_Rate'
+            )
+            fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+            fig.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Master Brand data not available in the current dataset")
 
 with tab2:
     st.markdown("## ⚠️ Problem Areas")
