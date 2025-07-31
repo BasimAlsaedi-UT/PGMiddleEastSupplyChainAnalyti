@@ -123,15 +123,16 @@ class PredictiveModels:
             'model': rf_model,
             'X_test': X_test,
             'y_test': y_test,
-            'y_pred_proba': y_pred_proba
+            'y_pred_proba': y_pred_proba_positive  # Store only positive class probabilities
         }
         
         return results
     
     def create_roc_curve(self, y_true, y_pred_proba):
         """Create ROC curve visualization"""
+        # y_pred_proba should already be 1D (positive class probabilities)
         fpr, tpr, _ = roc_curve(y_true, y_pred_proba)
-        auc_score = roc_auc_score(y_true, y_pred_proba)
+        auc_score = roc_auc_score(y_true, y_pred_proba) if len(np.unique(y_true)) > 1 else 0.5
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(
