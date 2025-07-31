@@ -225,7 +225,7 @@ class DataExtractor:
         metadata = {
             'extraction_date': datetime.now().isoformat(),
             'file1_sheets': list(file1_data.keys()),
-            'file2_sheets': list(file2_data.items()),
+            'file2_sheets': list(file2_data.keys()),  # Fixed: was .items() which included DataFrames
             'total_shipping_records': len(file1_data['main_data']),
             'total_sales_records': len(file2_data.get('Data', pd.DataFrame()))
         }
