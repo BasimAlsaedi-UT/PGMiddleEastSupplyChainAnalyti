@@ -55,6 +55,10 @@ class LightweightExtractor:
                 'Delivery_Status', 'Category'
             ]
             
+            # Ensure numeric columns are properly typed
+            if 'Quantity' in df_main.columns:
+                df_main['Quantity'] = pd.to_numeric(df_main['Quantity'], errors='coerce').fillna(0)
+            
             # Convert dates - handle Excel serial numbers
             date_cols = ['Requested_Ship_Date', 'Requested_Delivery_Date', 'Actual_Ship_Date']
             for col in date_cols:

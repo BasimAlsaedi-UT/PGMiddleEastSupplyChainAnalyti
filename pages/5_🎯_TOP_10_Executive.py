@@ -82,6 +82,8 @@ with col3:
 
 with col4:
     if 'Quantity' in filtered_data.columns:
+        # Ensure Quantity is numeric
+        filtered_data['Quantity'] = pd.to_numeric(filtered_data['Quantity'], errors='coerce').fillna(0)
         total_volume = filtered_data['Quantity'].sum()
         st.metric(
             "Total Volume",

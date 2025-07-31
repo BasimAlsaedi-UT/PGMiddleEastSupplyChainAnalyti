@@ -93,6 +93,10 @@ if 'Actual_Ship_Date' in filtered_data.columns:
     
     with col4:
         if 'Quantity' in today_data.columns:
+            # Ensure Quantity is numeric
+            today_data['Quantity'] = pd.to_numeric(today_data['Quantity'], errors='coerce').fillna(0)
+            yesterday_data['Quantity'] = pd.to_numeric(yesterday_data['Quantity'], errors='coerce').fillna(0)
+            
             today_volume = today_data['Quantity'].sum()
             yesterday_volume = yesterday_data['Quantity'].sum()
             volume_change = today_volume - yesterday_volume

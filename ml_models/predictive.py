@@ -45,7 +45,8 @@ class PredictiveModels:
         for col in categorical_cols:
             if col in features_df.columns:
                 le = LabelEncoder()
-                features_df[f'{col}_Encoded'] = le.fit_transform(features_df[col].fillna('Unknown'))
+                # Ensure all values are strings before encoding
+                features_df[f'{col}_Encoded'] = le.fit_transform(features_df[col].fillna('Unknown').astype(str))
                 self.encoders[col] = le
         
         # Select features
@@ -57,7 +58,9 @@ class PredictiveModels:
         
         # Add quantity if available
         if 'Quantity' in features_df.columns:
-            features_df['Quantity_Log'] = np.log1p(features_df['Quantity'].fillna(0))
+            # Ensure Quantity is numeric
+            features_df['Quantity'] = pd.to_numeric(features_df['Quantity'], errors='coerce').fillna(0)
+            features_df['Quantity_Log'] = np.log1p(features_df['Quantity'])
             feature_cols.append('Quantity_Log')
         
         # Remove rows with missing values
