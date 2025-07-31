@@ -1,0 +1,7 @@
+# Minimal requirements - let pip choose compatible versions
+streamlit
+pandas
+numpy
+plotly
+openpyxl
+xlrd
