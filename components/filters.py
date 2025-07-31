@@ -14,7 +14,8 @@ def create_date_filter(data, key="date_filter"):
     with col1:
         date_option = st.selectbox(
             "Date Range",
-            ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time", "Custom"],
+            ["All Time", "Last 7 Days", "Last 30 Days", "Last 90 Days", "Custom"],
+            index=0,  # Default to "All Time"
             key=f"{key}_option"
         )
     
